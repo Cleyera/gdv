@@ -110,7 +110,8 @@ private:
 
 /**
 * \exception none
-* \tparam Ty types that can arithmetic operate.
+* \tparam T types that can arithmetic operate.
+* \tparam U types that can be cast to T.
 * \param[in] x average<Ty>.
 * \param[in] y value.
 * \brief append stream y to average.
