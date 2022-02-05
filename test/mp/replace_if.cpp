@@ -1,14 +1,24 @@
+#include <tuple>
 #include <gdv/mp/test/test.h>
 
 template <typename Ty>
-struct is_int {
-    static constexpr bool value = ::std::is_same<Ty, int>::value;
+struct is_int : public ::std::is_same<Ty, int> {
 };
 
+template <typename ...Args>
+struct packer;
+
 GDV_MP_TEST_CASE(replace_if) {
-    using l1 = type_list<int, char, short>;
-    using l2 = type_list<short, char, short>;
-    GDV_MP_TEST_IS_SAME(replace_if_t<begin_t<l1>, end_t<l1>, is_int, short>, l2);
-    GDV_MP_TEST_IS_SAME(replace_if_t<begin_t<l1>, end_t<l1>::prev, is_int, short>, l2);
-    GDV_MP_TEST_IS_SAME(replace_if_t<begin_t<l1>::next, end_t<l1>, is_int, short>, l1);
+    using l1 = ::std::tuple<int, char, short>;
+    using l2 = ::std::tuple<int, int, int>;
+    using l3 = ::std::tuple<>;
+    using l4 = packer<int, char, short>;
+    using l5 = packer<int, int, int>;
+    using l6 = packer<>;
+    GDV_MP_TEST_IS_SAME(replace_if_t<l1, is_int, short>, ::std::tuple<short, char, short>);
+    GDV_MP_TEST_IS_SAME(replace_if_t<l2, is_int, short>, ::std::tuple<short, short, short>);
+    GDV_MP_TEST_IS_SAME(replace_if_t<l3, is_int, short>, ::std::tuple<>);
+    GDV_MP_TEST_IS_SAME(replace_if_t<l4, is_int, short>, packer<short, char, short>);
+    GDV_MP_TEST_IS_SAME(replace_if_t<l5, is_int, short>, packer<short, short, short>);
+    GDV_MP_TEST_IS_SAME(replace_if_t<l6, is_int, short>, packer<>);
 }

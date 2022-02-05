@@ -1,26 +1,65 @@
+#include <tuple>
 #include <gdv/mp/test/test.h>
+
+template <typename ...Args>
+struct packer;
 
 GDV_MP_TEST_CASE(push_front) {
     GDV_MP_TEST_IS_SAME(
         push_front<
-            int,
-            type_list<short>
+            ::std::tuple<short>,
+            int
         >::type,
-        type_list<int, short>);
+        ::std::tuple<int, short>
+    );
     GDV_MP_TEST_IS_SAME(
         push_front<
-            int,
-            type_list<>
+            ::std::tuple<>,
+            int
         >::type,
-        type_list<int>);
+        ::std::tuple<int>
+    );
     GDV_MP_TEST_IS_SAME(
         push_front_t<
-            int,
-            type_list<short> >,
-        type_list<int, short>);
+            ::std::tuple<short>,
+            int
+        >,
+        ::std::tuple<int, short>
+    );
     GDV_MP_TEST_IS_SAME(
         push_front_t<
-            int,
-            type_list<> >,
-        type_list<int>);
+            ::std::tuple<>,
+            int
+        >,
+        ::std::tuple<int>
+    );
+
+    GDV_MP_TEST_IS_SAME(
+        push_front<
+            packer<short>,
+            int
+        >::type,
+        packer<int, short>
+    );
+    GDV_MP_TEST_IS_SAME(
+        push_front<
+            packer<>,
+            int
+        >::type,
+        packer<int>
+    );
+    GDV_MP_TEST_IS_SAME(
+        push_front_t<
+            packer<short>,
+            int
+        >,
+        packer<int, short>
+    );
+    GDV_MP_TEST_IS_SAME(
+        push_front_t<
+            packer<>,
+            int
+        >,
+        packer<int>
+    );
 }

@@ -7,6 +7,10 @@
 #   define GDV_MP_ENABLE_VARIABLE_TEMPLATES
 #endif // __cpp_variable_templates
 
+#ifdef __cpp_fold_expressions
+#   define GDV_MP_ENABLE_FOLD_EXCPRESSIONS
+#endif // __cpp_fold_expressions
+
 #ifdef __cpp_lib_void_t
 #   define GDV_VOID_T ::std::void_t
 #else

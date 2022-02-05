@@ -1,35 +1,77 @@
+#include <tuple>
 #include <gdv/mp/test/test.h>
 
 template <typename Ty>
-struct is_int {
-    static constexpr bool value = std::is_same<int, Ty>::value;
+struct is_int : public ::std::is_same<Ty, int> {
 };
+
+template <typename ...Args>
+struct packer;
 
 GDV_MP_TEST_CASE(push_front_if) {
     GDV_MP_TEST_IS_SAME(
         push_front_if<
-            is_int,
+            ::std::tuple<short>,
             int,
-            type_list<short>
+            is_int
         >::type,
-        type_list<int, short>);
+        ::std::tuple<int, short>
+    );
     GDV_MP_TEST_IS_SAME(
         push_front_if<
-            is_int,
+            ::std::tuple<short>,
             char,
-            type_list<short>
+            is_int
         >::type,
-        type_list<short>);
+        ::std::tuple<short>
+    );
     GDV_MP_TEST_IS_SAME(
         push_front_if_t<
-            is_int,
+            ::std::tuple<short>,
             int,
-            type_list<short> >,
-        type_list<int, short>);
+            is_int
+        >,
+        ::std::tuple<int, short>
+    );
     GDV_MP_TEST_IS_SAME(
         push_front_if_t<
-            is_int,
+            ::std::tuple<short>,
             char,
-            type_list<short> >,
-        type_list<short>);
+            is_int
+        >,
+        ::std::tuple<short>
+    );
+
+    GDV_MP_TEST_IS_SAME(
+        push_front_if<
+            packer<short>,
+            int,
+            is_int
+        >::type,
+        packer<int, short>
+    );
+    GDV_MP_TEST_IS_SAME(
+        push_front_if<
+            packer<short>,
+            char,
+            is_int
+        >::type,
+        packer<short>
+    );
+    GDV_MP_TEST_IS_SAME(
+        push_front_if_t<
+            packer<short>,
+            int,
+            is_int
+        >,
+        packer<int, short>
+    );
+    GDV_MP_TEST_IS_SAME(
+        push_front_if_t<
+            packer<short>,
+            char,
+            is_int
+        >,
+        packer<short>
+    );
 }

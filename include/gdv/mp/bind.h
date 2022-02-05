@@ -1,8 +1,10 @@
 #ifndef GDV_MP_BIND_H_
 #define GDV_MP_BIND_H_
 
-#include <gdv/mp/type_list.h>
-#include <gdv/mp/algorithm.h>
+#include <tuple>
+#include <gdv/mp/concat.h>
+#include <gdv/mp/none_of.h>
+#include <gdv/mp/replace.h>
 
 namespace gdv {
 namespace mp {
@@ -14,59 +16,75 @@ struct placeholder {
 
 namespace detail {
 
+template <size_t I>
+struct is_placeholder {
+    template <typename Ty>
+    struct type : public ::std::conditional<
+        ::std::is_same<typename ::gdv::mp::placeholder<I>, Ty>::value,
+        ::std::true_type, ::std::false_type
+    >::type {
+    };
+};
+
 template <size_t I, typename Args1, typename Args2>
 struct replace_placeholder;
+
 template <size_t I, typename... Args1, typename Head, typename... Tail>
-struct replace_placeholder<I, type_list<Args1...>, type_list<Head, Tail...> >
+struct replace_placeholder<I, ::std::tuple<Args1...>, ::std::tuple<Head, Tail...> >
     : public ::std::conditional<
-        ::std::is_same<
-            typename ::gdv::mp::find<
-                typename ::gdv::mp::begin<type_list<Args1...> >::type,
-                typename ::gdv::mp::end<type_list<Args1...> >::type,
-                ::gdv::mp::placeholder<I>
-            >::type,
-            typename ::gdv::mp::end<type_list<Args1...> >::type
+        ::gdv::mp::none_of<
+            ::std::tuple<Args1...>,
+            ::gdv::mp::detail::is_placeholder<I>::template type
         >::value,
         typename ::gdv::mp::concat<
-            type_list<Args1...>,
-            type_list<Head, Tail...>
+            ::std::tuple<Args1...>,
+            ::std::tuple<Head, Tail...>
         >::type,
         typename ::gdv::mp::detail::replace_placeholder<
             I + 1,
             typename ::gdv::mp::replace<
-                typename ::gdv::mp::begin<type_list<Args1...> >::type,
-                typename ::gdv::mp::end<type_list<Args1...> >::type,
-                ::gdv::mp::placeholder<I>,
-                Head
+                ::std::tuple<Args1...>, ::gdv::mp::placeholder<I>, Head
             >::type,
-            type_list<Tail...> >::type > {
+            ::std::tuple<Tail...>
+        >::type
+    > {
 };
+
 template <size_t I, typename... Args1>
-struct replace_placeholder<I, type_list<Args1...>, type_list<> >
+struct replace_placeholder<I, ::std::tuple<Args1...>, ::std::tuple<> >
     : public ::std::enable_if<
-        ::std::is_same<
-            typename ::gdv::mp::find<
-                typename ::gdv::mp::begin<type_list<Args1...> >::type,
-                typename ::gdv::mp::end<type_list<Args1...> >::type,
-                ::gdv::mp::placeholder<I>
-            >::type,
-            typename ::gdv::mp::end<type_list<Args1...> >::type
+        ::gdv::mp::none_of<
+            ::std::tuple<Args1...>,
+            ::gdv::mp::detail::is_placeholder<I>::template type
         >::value,
-        type_list<Args1...> > {
+        ::std::tuple<Args1...> 
+    > {
+};
+
+template <template <typename...> typename Function, typename Args>
+struct fwd;
+
+template <template <typename...> typename Function, typename ...Args>
+struct fwd<Function, ::std::tuple<Args...> > {
+    using type = Function<Args...>;
 };
 
 } // namespace detail
 
-template <template <typename...> typename Function, typename... Args>
+template <template <typename...> typename Function, typename ...Args>
 struct bind {
     template <typename... Ty>
-    using type = typename ::gdv::mp::detail::receive<
+    using type = typename ::gdv::mp::detail::fwd<
         Function,
         typename ::gdv::mp::detail::replace_placeholder<
-            0, type_list<Args...>, type_list<Ty...>
+            0, ::std::tuple<Args...>, ::std::tuple<Ty...>
         >::type
     >::type;
 };
+
+
+template <template <typename...> typename Function, typename ...Args>
+using bind_t = typename ::gdv::mp::bind<Function, Args...>::type;
 
 } // namespace mp
 } // namespace gdv
